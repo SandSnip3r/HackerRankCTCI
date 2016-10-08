@@ -1,6 +1,5 @@
 #include <iostream>
 #include <string>
-#include <vector>
 #include <unordered_map>
 
 using namespace std;
@@ -11,76 +10,46 @@ private:
 	public:
 		bool isComplete{false};
 		char data{0};
+		int count{0};
 		unordered_map<char,Node*> nexts;
 		Node() = default;
-		Node(string::const_iterator strBegin, string::const_iterator strEnd) : data(*strBegin) {
-			++strBegin;
-			if (strBegin != strEnd) {
-				nexts.emplace(*strBegin, new Node(strBegin, strEnd));
-			} else {
-				isComplete = true;
+		Node(char c) : data(c) {}
+		~Node() {
+			for (auto &i : nexts) {
+				delete i.second;
 			}
 		}
 	};
 	Node root;
-	void print(Node *ptr) {
-		cout << ptr->data << (ptr->isComplete ? "* " : " ");
-		if (!ptr->nexts.empty()) {
-			cout << '[';
-			for (const auto &i : ptr->nexts) {
-				print(i.second);
-			}
-			cout << ']';
-		}
-	}
-	int getChildrenCount(Node *ptr) {
-		int sum = 0;
-		if (ptr->isComplete) {
-			++sum;
-		}
-		for (const auto &i : ptr->nexts) {
-			sum += getChildrenCount(i.second);
-		}
-		return sum;
-	}
 public:
 	void insert(const string &str) {
 		if (str.empty()) {
 			return;
 		}
-		if (root.nexts.count(str[0]) == 0) {
-			//This char doesnt exist at the root yet
-			root.nexts.emplace(str[0], new Node(str.begin(), str.end()));
-		} else {
-			//This char exists at the root
-			Node *ptr{root.nexts.at(str[0])};
-			for (auto it=std::next(str.cbegin()), end=str.cend(); it!=end; ++it) {
-				if (ptr->nexts.count(*it) == 0) {
-					//Char doesnt exist at this point
-					ptr->nexts.emplace(*it, new Node(it, end));
-					break;
-				} else {
-					//Char exists at this point
-					ptr = ptr->nexts.at(*it);
-				}
+		Node *ptr{&root};
+		for (char c : str) {
+			if (ptr->nexts.find(c) == ptr->nexts.end()) {
+				//Char doesnt exist
+				ptr->nexts.emplace(c, new Node(c));
+				ptr = ptr->nexts.at(c);
+			} else {
+				//Char does exist
+				ptr = ptr->nexts.at(c);
 			}
+			++ptr->count;
 		}
-	}
-	void print() {
-		cout << "Trie: ";
-		print(&root);
-		cout << '\n';
+		ptr->isComplete = true;
 	}
 	int count(const string &str) {
 		Node *ptr{&root};
 		for (char c : str) {
-			if (ptr->nexts.count(c) == 0) {
+			if (ptr->nexts.find(c) == ptr->nexts.end()) {
 				return 0;
 			} else {
 				ptr = ptr->nexts.at(c);
 			}
 		}
-		return getChildrenCount(ptr);
+		return ptr->count;
 	}
 };
 
@@ -93,14 +62,10 @@ int main() {
 	for (int i=0; i<operationCount; ++i) {
 		string operation, contact;
 		cin >> operation >> contact;
-		// cout << "User wants to " << operation << ' ' << contact << '\n';
 		if (operation == "add") {
 			contactTrie.insert(contact);
-			// contactTrie.print();
 		} else if (operation == "find") {
 			cout << contactTrie.count(contact) << '\n';
-		} else {
-			throw runtime_error("Unknown operation \""+operation+"\"");
 		}
 	}
 	return 0;
