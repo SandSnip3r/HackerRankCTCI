@@ -14,14 +14,18 @@ public:
 	Graph(int n) : nodeCount(n), edges(n, vector<int>(n, -1)) {}
 
 	void addEdge(int firstNode, int secondNode) {
+		// cout << "Enter addEdge\n";
+		if (firstNode >= nodeCount || secondNode >= nodeCount || firstNode < 0 || secondNode < 0) {
+			throw 1;
+		}
 		edges.at(firstNode).at(secondNode) = 6;
+		edges.at(secondNode).at(firstNode) = 6;
+		// cout << "Exit addEdge\n";
 	}
 
 	vector<int> shortestPaths(int start) {
-		map<int,int> nodeDistance;
-		for (int i=0; i<nodeCount; ++i) {
-			nodeDistance.emplace(i, -1);
-		}
+		// cout << "Begin test starting at " << start << '\n';
+		vector<int> nodeDistance(nodeCount, -1);
 		nodeDistance[start] = 0;
 
 		queue<int> nodesToSearch;
@@ -29,25 +33,26 @@ public:
 
 		while (!nodesToSearch.empty()) {
 			int current = nodesToSearch.front();
+			// cout << "While, current: " << current << '\n';
 			nodesToSearch.pop();
 
 			for (int i=0; i<nodeCount; ++i) {
-				int edgeWeight = edges.at(current).at(i);
-				if (edgeWeight != -1) {
-					//for each node connected to current
-					if (nodeDistance[i] == -1) {
+				if (nodeDistance[i] == -1) {
+					// cout << "Currently impossible to get to " << i << '\n';
+					int edgeWeight = edges.at(current).at(i);
+					if (edgeWeight != -1) {
+						// cout << "Edge exists between " << current << " and " << i << '\n';
+						//for each node connected to current
 						nodeDistance[i] = nodeDistance[current] + edgeWeight;
+						// cout << "Now possible to get to " << i << " via " << nodeDistance[i] << " steps\n";
 						nodesToSearch.emplace(i);
 					}
+				} else {
+					// cout << "Already possible to get to " << i << " via " << nodeDistance[i] << " steps\n";
 				}
 			}
 		}
-		vector<int> results;
-		results.reserve(nodeCount);
-		for (auto i : nodeDistance) {
-			results.emplace_back(i.second);
-		}
-		return results;
+		return nodeDistance;
 	}
 };
 
@@ -81,7 +86,7 @@ int main() {
 				cout << distances[i] << " ";
 			}
 		}
-		cout << endl;
+		cout << '\n';
 	}
 	return 0;
 }
