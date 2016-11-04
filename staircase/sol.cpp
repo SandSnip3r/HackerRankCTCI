@@ -41,7 +41,7 @@ int calculatePossibilities(int staircaseHeight) {
 	sum += calculatePossibilities(staircaseHeight-1);
 	//Take 2 steps, then calculate remaining
 	sum += calculatePossibilities(staircaseHeight-2);
-	//Take 3 stepd, then calculate remaining
+	//Take 3 steps, then calculate remaining
 	sum += calculatePossibilities(staircaseHeight-3);
 	previouslyComputedSolutions[staircaseHeight] = sum;
 	return sum;
